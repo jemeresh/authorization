@@ -4,8 +4,12 @@ import cors from 'cors'
 import sockjs from 'sockjs'
 import cookieParser from 'cookie-parser'
 
+import mongooseService from './services/mongoose'
+
 import config from './config'
 import Html from '../client/html'
+
+mongooseService.connect()
 
 require('colors')
 
@@ -23,6 +27,11 @@ const middleware = [
 ]
 
 middleware.forEach((it) => server.use(it))
+
+server.post('/api/v1/log', (req, res) => {
+  console.log(req.body)
+  res.json({ status: 'ok' })
+})
 
 server.get('/', (req, res) => {
   res.send(`
