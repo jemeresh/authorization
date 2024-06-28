@@ -8,6 +8,7 @@ import store, { history } from '../redux'
 import Home from '../components/home'
 import DummyView from '../components/dummy-view'
 import NotFound from '../components/404'
+import PrivateComponent from '../components/private-route'
 
 import Startup from './startup'
 
@@ -22,22 +23,24 @@ const OnlyAnonymousRoute = ({ component: Component, ...rest }) => {
 }
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
-  const user = useSelector((state) => state.auth.user)
-  const token = useSelector((state) => state.token)
+  const log = useSelector(s => s.log )
+  // const user = useSelector((state) => state.auth.user)
+  // const token = useSelector((state) => state.token)
 
-  const func = (props) => {
-    if (!!user && !!user.name && !!token) return <Component {...props} />
-
-    return (
+  const func = (props) =>
+    !!log.user &&  !!rest.token ? (
+      <Component {...props} />
+    ) : (
       <Redirect
         to={{
           pathname: '/login'
         }}
       />
     )
+      return <Route {...rest} render={func} />
   }
-  return <Route {...rest} render={func} />
-}
+
+
 
 const RouterSelector = (props) =>
   typeof window !== 'undefined' ? <ConnectedRouter {...props} /> : <StaticRouter {...props} />
@@ -48,10 +51,12 @@ const RootComponent = (props) => {
       <RouterSelector history={history} location={props.location} context={props.context}>
         <Startup>
           <Switch>
+            <Route exact path="/login" component={Home} />
+            <Route exact path="/dummy-view" component={DummyView} />
             <Route exact path="/" component={Home} />
             <Route exact path="/dashboard" component={Home} />
-            <PrivateRoute exact path="/hidden-route" component={DummyView} />
-            <OnlyAnonymousRoute exact path="/anonymous-route" component={DummyView} />
+            <PrivateRoute exact path="/private" component={() => <PrivateComponent/>} />
+            <OnlyAnonymousRoute exact path="/login" component={Home} />
 
             <Route component={NotFound} />
           </Switch>

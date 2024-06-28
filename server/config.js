@@ -6,6 +6,7 @@ const options = {
   env: process.env.NODE_ENV,
   isSocketsEnabled: process.env.ENABLE_SOCKETS,
   mongoURL: process.env.MONGO_URL,
+  secret: process.env.SECRET_JWT || 'secretKey'
 }
 
 module.exports = options

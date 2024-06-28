@@ -3,13 +3,23 @@ import path from 'path'
 import cors from 'cors'
 import sockjs from 'sockjs'
 import cookieParser from 'cookie-parser'
-
+import passport from 'passport'
+import jwt from 'jsonwebtoken'
 import mongooseService from './services/mongoose'
+import passportJWT from './services/passport'
+
 
 import config from './config'
 import Html from '../client/html'
+import User from './model/User.model'
 
 mongooseService.connect()
+
+// const user = new User({
+//   email: 'ввввввввввввввв',
+//   password: '1234567890'
+// })
+// user.save()
 
 require('colors')
 
@@ -20,17 +30,29 @@ const server = express()
 
 const middleware = [
   cors(),
+  passport.initialize(),
   express.static(path.resolve(__dirname, '../dist')),
   express.urlencoded({ limit: '50mb', extended: true, parameterLimit: 50000 }),
   express.json({ limit: '50mb', extended: true }),
   cookieParser()
 ]
 
+passport.use('jwt', passportJWT.jwt),
+
 middleware.forEach((it) => server.use(it))
 
-server.post('/api/v1/log', (req, res) => {
+server.post('/api/v1/log', async (req, res) => {
   console.log(req.body)
-  res.json({ status: 'ok' })
+  try {
+    const user = await User.findAndValidateUser(req.body)
+    const payload = { uid: user.id }
+    const token = jwt.sign(payload, config.secret, { expiresIn: '48h' })
+    delete user.password
+    res.json({ status: 'ok', token, user })
+  } catch (err) {
+    console.log(err)
+    res.json({ status: 'error', err })
+  }
 })
 
 server.get('/', (req, res) => {

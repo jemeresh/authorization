@@ -14,6 +14,3 @@ exports.connect = async (mongoURL = config.mongoURL) => {
   mongoose.connect(mongoURL)
   return mongoose.connection
 }
-
-console.log(process.env.MONGO_URL)
-console.log(config.mongoURL)
